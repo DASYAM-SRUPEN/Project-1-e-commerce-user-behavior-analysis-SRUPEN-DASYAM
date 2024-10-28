@@ -7,9 +7,6 @@ products_df = pd.read_csv('input/products.csv')
 
 class MRProductRevenue(MRJob):
     
-    # Flag to check if headers have been emitted
-    headers_emitted = False
-    
     def steps(self):
         return [
             MRStep(mapper=self.mapper_revenue,
@@ -47,11 +44,6 @@ class MRProductRevenue(MRJob):
     
     # Reducer 3: Find and output the top 3 most profitable products in each category
     def reducer_find_top3(self, category, product_revenues):
-        # Emit headers if they haven't been emitted yet
-        if not self.headers_emitted:
-            yield "Category", ("ProductName", "TotalRevenue")
-            self.headers_emitted = True
-        
         # Collect all products in this category, sort by revenue, and return top 3
         sorted_products = sorted(product_revenues, key=lambda x: x[1], reverse=True)
         top_3 = sorted_products[:3]
