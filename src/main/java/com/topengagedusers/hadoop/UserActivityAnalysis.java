@@ -1,4 +1,5 @@
 package com.topengagedusers.hadoop;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +42,7 @@ public class UserActivityAnalysis {
     // Reducer Class
     public static class UserActivityReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
         private Map<String, Integer> userActivityCount = new HashMap<>();
+        private boolean headerEmitted = false;  // Flag to track if header is emitted
 
         @Override
         protected void reduce(Text key, Iterable<IntWritable> values, Context context)
@@ -64,6 +66,12 @@ public class UserActivityAnalysis {
                 if (sortedUsers.size() > 10) {
                     sortedUsers.remove(sortedUsers.firstKey()); // Remove the smallest count
                 }
+            }
+
+            // Emit header if it hasn't been emitted
+            if (!headerEmitted) {
+                context.write(new Text("UserID\tActivityCount"), null);
+                headerEmitted = true;
             }
 
             // Write the top 10 users to context in descending order

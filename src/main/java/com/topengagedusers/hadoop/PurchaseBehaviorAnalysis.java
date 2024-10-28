@@ -66,16 +66,25 @@ public class PurchaseBehaviorAnalysis {
     // Reducer Class
     public static class PurchaseBehaviorReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
         private IntWritable result = new IntWritable();
+        private boolean headerWritten = false;
 
         @Override
         protected void reduce(Text key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
             int sum = 0;
+            
             // Sum up all the purchases for the given key (hour-productCategory)
             for (IntWritable value : values) {
                 sum += value.get();
             }
             result.set(sum);
+
+            // Write the header once before the first data row
+            if (!headerWritten) {
+                context.write(new Text("Hour-ProductCategory \t PurchaseCount"), null);
+                headerWritten = true;
+            }
+            
             // Emit the key (hour-productCategory) and the total number of purchases
             System.out.println("Reducer Emitting: " + key.toString() + " -> " + sum);
             context.write(key, result);
